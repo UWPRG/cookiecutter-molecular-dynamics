@@ -1,0 +1,86 @@
+RESTART
+WHOLEMOLECULES ENTITY0=1-8843  # include toxin for appropriate RMSD/COM calcs
+
+##############################################
+############## DEFINE RESIDUES ###############
+##############################################
+
+### putative hydrophobic pocket (sidechain heavy)
+I384: COM ATOMS=6035,6037,6041,6044
+N387: COM ATOMS=6093,6096,6097,6098
+F399: COM ATOMS=6287,6290,6291,6293,6295,6297,6299
+L403: COM ATOMS=6348,6351,6353,6357
+V429: COM ATOMS=6784,6786,6790
+A445: COM ATOMS=7025
+L449: COM ATOMS=7083,7086,7088,7092
+
+### potential hydrogen bonders 
+R406: GROUP ATOMS=6411,6414,6417  # (sidechain donors)
+Y407: GROUP ATOMS=6435  # (sidechain donor)
+L426: GROUP ATOMS=6750  # (backbone acceptor)
+R481: GROUP ATOMS=7598,7601,7604  # (sidechain donors)
+S485: GROUP ATOMS=7660  # (sidechain donor)
+
+### toxin groups
+toxin_benz: COM ATOMS=8824-8829  # hydrophobic 
+toxin_O: GROUP ATOMS=8839,8841,8842,8843  # hbond acceptors
+toxin_N: GROUP ATOMS=8838  # hbond donor
+
+toxin_C: GROUP ATOMS=8824,8825,8826,8827,8828,8829,8830,8831
+
+### water oxygen
+sol_O: GROUP ATOMS=8844-44470:3  # hbond donors/acceptors
+
+### calpha atoms for protein-protein dists
+I384_CA: GROUP ATOMS=6033
+R406_CA: GROUP ATOMS=6400
+S485_CA: GROUP ATOMS=7655
+
+###############################################
+############### DEFINE COLVARS ################
+###############################################
+bp_com: COM ATOMS=6091,6093,6096,6101,6400,6402,6405,6408,6413,6420,6424,6426,6429,6430,6432,6434,6437,6439,6441,6734,6736,6739,6741,6745,6749,7081,7083,7086,7088,7092,7096,7655,7657,7662
+toxin_com: COM ATOMS=toxin_C
+dist: DISTANCE ATOMS=bp_com,toxin_com
+
+### hydrophobic protein-ligand dists
+I384_dist: DISTANCE ATOMS=I384,toxin_benz
+N387_dist: DISTANCE ATOMS=N387,toxin_benz
+F399_dist: DISTANCE ATOMS=F399,toxin_benz
+L403_dist: DISTANCE ATOMS=L403,toxin_benz
+V429_dist: DISTANCE ATOMS=V429,toxin_benz
+A445_dist: DISTANCE ATOMS=A445,toxin_benz
+L449_dist: DISTANCE ATOMS=L449,toxin_benz
+
+### hydrophilic protein-ligand mindists
+R406_dist: DISTANCES GROUPA=R406 GROUPB=toxin_O MIN={BETA=100}  # (sidechain donors)
+Y407_dist: DISTANCES GROUPA=Y407 GROUPB=toxin_O MIN={BETA=100}  # (sidechain donor)
+L426_dist: DISTANCES GROUPA=L426 GROUPB=toxin_N MIN={BETA=100}  # (bb acceptor)
+R481_dist: DISTANCES GROUPA=R481 GROUPB=toxin_O MIN={BETA=100}  # (sidechain donors)
+S485_dist: DISTANCES GROUPA=S485 GROUPB=toxin_O MIN={BETA=100}  # (sidechain donor)
+
+### protein-protein backbone distances
+I384_R406: DISTANCE ATOMS=I384_CA,R406_CA
+I384_S485: DISTANCE ATOMS=I384_CA,S485_CA
+R406_S485: DISTANCE ATOMS=R406_CA,S485_CA
+
+### ligand hydration
+#coord_O: COORDINATION GROUPA=toxin_O GROUPB=sol_O D_0=0.27 R_0=0.03 NLIST NL_CUTOFF=0.5 NL_STRIDE=5
+#coord_O: COORDINATION GROUPA=toxin_N GROUPB=sol_O D_0=0.29 R_0=0.03 NLIST NL_CUTOFF=0.5 NL_STRIDE=5
+
+rc1: COMBINE ARG=dist,I384_dist,N387_dist,F399_dist,L403_dist,V429_dist,A445_dist,L449_dist,R406_dist.min,Y407_dist.min,L426_dist.min,R481_dist.min,S485_dist.min,I384_R406,I384_S485,R406_S485 PERIODIC=NO COEFFICIENTS=-0.3036439,0.02458999,0.17461500,0.14943929,-0.0151356,0.33219675,0.30507623,-0.0014748,0.12822764,0.38999111,0.35058393,-0.0762771,-0.4194289,0.28525588,-0.0738713,0.30117190
+
+METAD ...
+LABEL=metad
+ARG=rc1
+PACE=1000 BIASFACTOR=15.0 HEIGHT=1.5
+SIGMA=0.02
+GRID_MIN=-10 
+GRID_MAX=10
+FILE=HILLS
+REWEIGHTING_NGRID=200
+REWEIGHTING_NHILLS=20
+... METAD
+
+#make STRIDE = to your exchange attempt frequency!!!
+PRINT FILE=COLVAR ARG=* STRIDE=5
