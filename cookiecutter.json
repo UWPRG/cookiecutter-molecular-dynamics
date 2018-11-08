@@ -1,7 +1,7 @@
 {
     "project_name": "MD Project",
     "project_slug": "{{cookiecutter.project_name.lower().strip().replace(' ', '-')}}",
-    "creator": "your name",
+    "user_name": "",
     "project_type": ["Classical", "MetaD", "PBMetaD"],
     "project_desc": "{{ cookiecutter.project_type }} simulation of {{ cookiecutter.project_name }}."
 }
